@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../api/api"; // ← replaced axios import ONLY
 
 const moods = [
   { label: "Happy", emoji: "😊" },
@@ -19,7 +19,7 @@ function MoodSelector({ user, onDone }) {
     setStatus("Saving...");
 
     try {
-      await axios.post("http://localhost:5000/api/moods", {
+      await api.post("/api/moods", {
         userId: user._id,
         mood,
       });

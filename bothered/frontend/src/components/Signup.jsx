@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../api/api"; // ← only change instead of axios import
 
 function Signup({ onSignup, onLogin }) {
   const [name, setName] = useState("");
@@ -15,8 +15,8 @@ function Signup({ onSignup, onLogin }) {
     }
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/signup",
+      const res = await api.post(
+        "/api/auth/signup",
         { name, email, password }
       );
       setUserId(res.data.userId);
@@ -32,8 +32,8 @@ function Signup({ onSignup, onLogin }) {
     }
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/verify-otp",
+      const res = await api.post(
+        "/api/auth/verify-otp",
         { userId, otp }
       );
       onSignup(res.data.user);
@@ -45,7 +45,6 @@ function Signup({ onSignup, onLogin }) {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-emerald-800 px-4 overflow-hidden">
 
-      {/* 🏢 SINGLE COMPANY LOGO BACKGROUND */}
       <img
         src="/bothered.png"
         alt="Bothered logo"
@@ -60,10 +59,8 @@ function Signup({ onSignup, onLogin }) {
         "
       />
 
-      {/* SIGNUP CARD */}
       <div className="relative bg-white w-full max-w-md p-10 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.35)] z-10">
 
-        {/* TITLE */}
         <h1 className="text-4xl font-extrabold mb-2 text-center text-emerald-800 flex items-center justify-center gap-2">
           🌱 Sign Up
         </h1>

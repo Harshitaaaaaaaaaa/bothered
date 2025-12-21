@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api"; // ← replaced axios import ONLY
 import { FiCalendar } from "react-icons/fi";
 
 const moodEmoji = {
@@ -36,7 +36,6 @@ function MoodCalendar({ user, onBack }) {
   const [sadStreak, setSadStreak] = useState(0);
   const [emailSent, setEmailSent] = useState(false);
 
-  // 🔹 NEW: current visible month
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const year = currentMonth.getFullYear();
@@ -47,8 +46,8 @@ function MoodCalendar({ user, onBack }) {
 
   useEffect(() => {
     const fetchMoods = async () => {
-      const res = await axios.get(
-        `http://localhost:5000/api/moods/${user._id}`
+      const res = await api.get(
+        `/api/moods/${user._id}`
       );
       setMoods(res.data);
       calculateSadStreak(res.data);
@@ -69,14 +68,13 @@ function MoodCalendar({ user, onBack }) {
   };
 
   const sendAlert = async () => {
-    await axios.post("http://localhost:5000/api/alert/email", {
+    await api.post("/api/alert/email", {
       email: "trustedperson@gmail.com",
       userName: user.name,
     });
     setEmailSent(true);
   };
 
-  // 🔹 Mood mapping by YYYY-MM-DD
   const moodByDate = {};
   moods.forEach((entry) => {
     const d = new Date(entry.date);
@@ -84,7 +82,6 @@ function MoodCalendar({ user, onBack }) {
     moodByDate[key] = entry.mood;
   });
 
-  // 🔹 Month navigation
   const prevMonth = () => {
     setCurrentMonth(
       new Date(year, month - 1, 1)
@@ -101,7 +98,6 @@ function MoodCalendar({ user, onBack }) {
     <div className="min-h-screen bg-emerald-900 text-white flex justify-center py-10 px-4">
       <div className="w-full max-w-3xl">
 
-        {/* HEADER */}
         <div className="flex items-center gap-3 mb-6">
           <FiCalendar className="text-3xl" />
           <div>
@@ -112,7 +108,6 @@ function MoodCalendar({ user, onBack }) {
           </div>
         </div>
 
-        {/* ALERT */}
         {sadStreak >= 3 && (
           <div className="bg-white text-black rounded-2xl p-4 mb-5 shadow-lg">
             <p className="font-semibold">
@@ -124,7 +119,6 @@ function MoodCalendar({ user, onBack }) {
           </div>
         )}
 
-        {/* EMAIL */}
         {sadStreak >= 5 && (
           <div className="bg-white text-black rounded-2xl p-4 mb-6 shadow-lg">
             {!emailSent ? (
@@ -143,7 +137,6 @@ function MoodCalendar({ user, onBack }) {
           </div>
         )}
 
-        {/* HELPLINES */}
         {sadStreak >= 3 && (
           <div className="bg-white text-black rounded-2xl p-5 mb-6 shadow-xl">
             <h2 className="font-bold mb-3">📞 Mental Health Support (India)</h2>
@@ -166,10 +159,8 @@ function MoodCalendar({ user, onBack }) {
           </div>
         )}
 
-        {/* CALENDAR */}
         <div className="bg-white rounded-3xl p-5 shadow-2xl">
 
-          {/* MONTH NAV */}
           <div className="flex justify-between items-center mb-4">
             <button
               onClick={prevMonth}
@@ -224,7 +215,6 @@ function MoodCalendar({ user, onBack }) {
           </div>
         </div>
 
-        {/* BACK */}
         <button
           onClick={onBack}
           className="mt-6 text-sm underline text-white/80 hover:text-white"

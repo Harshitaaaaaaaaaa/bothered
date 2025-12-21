@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../api/api"; // ← replaced axios import ONLY
 
 function AIChat({ onBack }) {
   const [messages, setMessages] = useState([
@@ -21,7 +21,7 @@ function AIChat({ onBack }) {
     setMessages((prev) => [...prev, { sender: "user", text: userText }]);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/ai/chat", {
+      const res = await api.post("/api/ai/chat", {
         message: userText,
       });
 

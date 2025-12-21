@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api"; // ← replaced axios import ONLY
 
 function ContactFriend({ user, onBack }) {
   const [contacts, setContacts] = useState([]);
@@ -9,8 +9,8 @@ function ContactFriend({ user, onBack }) {
 
   /* FETCH CONTACTS */
   const fetchContacts = async () => {
-    const res = await axios.get(
-      `http://localhost:5000/api/contacts/${user._id}`
+    const res = await api.get(
+      `/api/contacts/${user._id}`
     );
     setContacts(res.data);
   };
@@ -26,7 +26,7 @@ function ContactFriend({ user, onBack }) {
       return;
     }
 
-    await axios.post("http://localhost:5000/api/contacts", {
+    await api.post("/api/contacts", {
       userId: user._id,
       name,
       phone,
@@ -41,7 +41,7 @@ function ContactFriend({ user, onBack }) {
 
   /* DELETE CONTACT */
   const deleteContact = async (id) => {
-    await axios.delete(`http://localhost:5000/api/contacts/${id}`);
+    await api.delete(`/api/contacts/${id}`);
     fetchContacts();
   };
 

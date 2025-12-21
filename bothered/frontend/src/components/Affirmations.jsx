@@ -1,72 +1,121 @@
 import { useState } from "react";
+import api from "../api/api";
 
-const affirmations = [
-  "🌿 I am doing the best I can, and that is enough.",
-  "✨ I deserve peace, rest, and kindness.",
-  "💚 My feelings are valid, even on hard days.",
-  "🌱 I am growing at my own pace.",
-  "🌸 This moment does not define my whole story.",
-  "☀️ I choose to be gentle with myself today.",
-  "🫶 I am allowed to take breaks and ask for help.",
-  "🌊 Like waves, my emotions will pass.",
-  "🍃 I am safe, I am breathing, I am here.",
-  "💫 Small steps still move me forward."
-];
+function AIChat({ onBack }) {
+  const [messages, setMessages] = useState([
+    {
+      sender: "ai",
+      text: "Hi I am Luma💚 I’m here to listen. What’s been on your mind?",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-function Affirmations({ onBack }) {
-  const [index, setIndex] = useState(
-    Math.floor(Math.random() * affirmations.length)
-  );
+  const sendMessage = async () => {
+    if (!input.trim()) return;
 
-  const nextAffirmation = () => {
-    setIndex((prev) => (prev + 1) % affirmations.length);
+    const userText = input;
+    setInput("");
+    setLoading(true);
+
+    setMessages((prev) => [...prev, { sender: "user", text: userText }]);
+
+    try {
+      const res = await api.post("/api/ai/chat", {
+        message: userText,
+      });
+
+      setMessages((prev) => [
+        ...prev,
+        { sender: "ai", text: res.data.reply },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "ai", text: "I’m here 💚 but I’m having trouble right now." },
+      ]);
+    }
+
+    setLoading(false);
   };
 
   return (
-    <div
-      className="min-h-screen relative flex items-center justify-center text-white"
-      style={{
-        backgroundImage:
-          "url(https://images.unsplash.com/photo-1500530855697-b586d89ba3ee)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/50"></div>
+    <div className="min-h-screen bg-emerald-900 text-white flex justify-center px-4 py-6">
+      <div className="w-full max-w-3xl flex flex-col">
 
-      {/* Glass card */}
-      <div
-        className="relative z-10 w-full max-w-md mx-4
-        backdrop-blur-xl bg-white/10 border border-white/20
-        rounded-3xl p-10 shadow-2xl text-center"
-      >
-        <h1 className="text-3xl font-extrabold mb-6">
-          🌱 Positive Affirmations
-        </h1>
+        {/* HEADER */}
+        <header className="bg-emerald-800 rounded-3xl p-5 shadow-lg mb-4">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            💬 Luma Here-Your AI Companion
+          </h1>
+          <p className="text-white/75 text-sm">
+            A safe, judgment-free space to talk
+          </p>
+        </header>
 
-        <p className="text-xl leading-relaxed mb-10 text-white/90">
-          {affirmations[index]}
-        </p>
+        {/* CHAT AREA */}
+        <main className="flex-1 overflow-y-auto space-y-4 px-2 pb-4">
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              className={`max-w-[75%] p-4 rounded-2xl text-sm shadow
+                ${
+                  m.sender === "ai"
+                    ? "bg-emerald-50 text-black self-start"
+                    : "bg-emerald-700 text-white self-end ml-auto"
+                }`}
+            >
+              {m.text}
+            </div>
+          ))}
 
-        <button
-          onClick={nextAffirmation}
-          className="w-full py-3 rounded-full
-          bg-emerald-600 font-semibold
-          hover:bg-emerald-700 transition"
-        >
-          ✨ Next Affirmation
-        </button>
+          {loading && (
+            <div className="bg-emerald-50 text-black p-3 rounded-xl w-fit shadow">
+              Typing…
+            </div>
+          )}
+        </main>
 
-        <button
-          onClick={onBack}
-          className="mt-8 text-white/70 underline"
-        >
-          ← Back to Home
-        </button>
+        {/* INPUT */}
+        <footer className="mt-2 bg-emerald-800 rounded-2xl p-4 shadow-lg">
+          <div className="flex gap-3">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type how you feel…"
+              className="
+                flex-1 px-4 py-2.5 rounded-xl
+                bg-white text-black
+                outline-none
+                focus:ring-2 focus:ring-emerald-500
+              "
+            />
+            <button
+              onClick={sendMessage}
+              disabled={loading}
+              className="
+                px-5 py-2.5 rounded-xl
+                bg-emerald-700 text-white font-semibold
+                hover:bg-emerald-800
+                transition
+                disabled:opacity-60
+              "
+            >
+              Send
+            </button>
+          </div>
+
+          <button
+            onClick={onBack}
+            className="mt-3 text-sm underline text-white/80 hover:text-white transition"
+          >
+            ← Back
+          </button>
+        </footer>
+
       </div>
     </div>
   );
 }
 
-export default Affirmations;
+export default AIChat;
