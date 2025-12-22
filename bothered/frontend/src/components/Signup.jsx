@@ -1,67 +1,62 @@
 import { useState } from "react";
-import api from "../api/api"; // ← only change instead of axios import
+import api from "../api/api";
 
 function Signup({ onSignup, onLogin }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userId, setUserId] = useState(null);
-  const [otp, setOtp] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const signup = async () => {
     if (!name || !email || !password) {
-      alert("Please fill all fields");
+      setMessage("❌ Please fill all fields");
       return;
     }
 
-    try {
-      const res = await api.post(
-        "/api/auth/signup",
-        { name, email, password }
-      );
-      setUserId(res.data.userId);
-    } catch (err) {
-      alert(err.response?.data?.message || "Signup failed");
-    }
-  };
-
-  const verifyOtp = async () => {
-    if (!otp) {
-      alert("Please enter OTP");
-      return;
-    }
+    setLoading(true);
+    setMessage("");
 
     try {
-      const res = await api.post(
-        "/api/auth/verify-otp",
-        { userId, otp }
-      );
-      onSignup(res.data.user);
+      const res = await api.post("/api/auth/signup", {
+        name,
+        email,
+        password,
+      });
+
+      setMessage("✅ Account created successfully!");
+
+      // Give user visual feedback before moving ahead
+      setTimeout(() => {
+        onSignup(res.data.user);
+      }, 800);
     } catch (err) {
-      alert(err.response?.data?.message || "OTP verification failed");
+      setMessage(
+        err.response?.data?.message || "❌ Signup failed. Try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-emerald-800 px-4 overflow-hidden">
-
+      {/* Background logo */}
       <img
         src="/bothered.png"
         alt="Bothered logo"
         className="
-          absolute
-          top-1/2 left-1/2
+          absolute top-1/2 left-1/2
           -translate-x-1/2 -translate-y-1/2
           w-[280px] md:w-[360px]
-          opacity-10
-          pointer-events-none
-          select-none
+          opacity-10 pointer-events-none select-none
         "
       />
 
+      {/* Card */}
       <div className="relative bg-white w-full max-w-md p-10 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.35)] z-10">
-
-        <h1 className="text-4xl font-extrabold mb-2 text-center text-emerald-800 flex items-center justify-center gap-2">
+        <h1 className="text-4xl font-extrabold mb-2 text-center text-emerald-800">
           🌱 Sign Up
         </h1>
 
@@ -69,104 +64,75 @@ function Signup({ onSignup, onLogin }) {
           Begin your journey to better mental well-being
         </p>
 
-        {!userId ? (
-          <>
-            <input
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="
-                w-full mb-3 p-3 rounded-xl
-                border border-emerald-200
-                text-black placeholder-gray-400
-                focus:outline-none focus:ring-2 focus:ring-emerald-600
-              "
-            />
+        <input
+          placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="
+            w-full mb-3 p-3 rounded-xl
+            border border-emerald-200
+            text-black placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-emerald-600
+          "
+        />
 
-            <input
-              placeholder="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="
-                w-full mb-3 p-3 rounded-xl
-                border border-emerald-200
-                text-black placeholder-gray-400
-                focus:outline-none focus:ring-2 focus:ring-emerald-600
-              "
-            />
+        <input
+          placeholder="Email Address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="
+            w-full mb-3 p-3 rounded-xl
+            border border-emerald-200
+            text-black placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-emerald-600
+          "
+        />
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="
-                w-full mb-5 p-3 rounded-xl
-                border border-emerald-200
-                text-black placeholder-gray-400
-                focus:outline-none focus:ring-2 focus:ring-emerald-600
-              "
-            />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="
+            w-full mb-5 p-3 rounded-xl
+            border border-emerald-200
+            text-black placeholder-gray-400
+            focus:outline-none focus:ring-2 focus:ring-emerald-600
+          "
+        />
 
-            <button
-              onClick={signup}
-              className="
-                w-full py-3 rounded-xl
-                bg-emerald-800 text-white font-semibold text-lg
-                hover:bg-emerald-900 transition
-              "
-            >
-              Send OTP
-            </button>
+        <button
+          onClick={signup}
+          disabled={loading}
+          className={`
+            w-full py-3 rounded-xl
+            font-semibold text-lg transition
+            ${
+              loading
+                ? "bg-emerald-400 cursor-not-allowed text-white"
+                : "bg-emerald-800 hover:bg-emerald-900 text-white"
+            }
+          `}
+        >
+          {loading ? "Creating account..." : "Create Account"}
+        </button>
 
-            <div className="mt-4 text-xs text-gray-600 text-center leading-relaxed">
-              🔐 A one-time code will be sent to your email  
-              <br />
-              Your password is safely encrypted
-            </div>
-
-            <div className="mt-5 text-center text-sm text-gray-700">
-              Already have an account?{" "}
-              <button
-                onClick={onLogin}
-                className="text-emerald-800 font-semibold underline hover:text-emerald-900"
-              >
-                Login
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <input
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="
-                w-full mb-5 p-3 rounded-xl text-center tracking-widest
-                border border-emerald-200
-                text-black placeholder-gray-400
-                focus:outline-none focus:ring-2 focus:ring-emerald-600
-              "
-            />
-
-            <button
-              onClick={verifyOtp}
-              className="
-                w-full py-3 rounded-xl
-                bg-emerald-800 text-white font-semibold text-lg
-                hover:bg-emerald-900 transition
-              "
-            >
-              Verify OTP
-            </button>
-
-            <div className="mt-5 text-xs text-gray-600 text-center">
-              Didn’t receive the code?  
-              <br />
-              Please wait or check spam ⏳
-            </div>
-          </>
+        {/* Acknowledgement message */}
+        {message && (
+          <p className="mt-4 text-center text-sm text-emerald-700">
+            {message}
+          </p>
         )}
+
+        <div className="mt-6 text-center text-sm text-gray-700">
+          Already have an account?{" "}
+          <button
+            onClick={onLogin}
+            className="text-emerald-800 font-semibold underline hover:text-emerald-900"
+          >
+            Login
+          </button>
+        </div>
       </div>
     </div>
   );
